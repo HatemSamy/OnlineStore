@@ -11,10 +11,10 @@ const ApiError = require("../utils/apiError");
 const sendEmail = require("../utils/sendEmail");
 const createToken = require("../utils/createToken");
 const { sanatizeUser } = require("../utils/sanatizeData");
-const { sendSMS } = require("../config/sendSMS");
+// const { sendSMS } = require("../config/sendSMS");
 
 const User = require("../models/userModel");
-const { sendOTP } = require("../utils/twilio");
+// const { sendOTP } = require("../utils/twilio");
 
 exports.signup = asyncHandler(async (req, res, next) => {
   let active = false; // Default to false for wholesale users

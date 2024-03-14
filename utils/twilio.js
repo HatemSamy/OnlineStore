@@ -1,23 +1,24 @@
-const twilio = require('twilio');
+// require("dotenv").config();
+// const twilio = require('twilio');
 
-// Initialize Twilio client
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+// // Initialize Twilio client
+// const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-// Function to send OTP via SMS
-exports.sendOTP = async (otp) => {
-  // try {
-    await client.messages.create({
-      body: `Your OTP for signup: ${otp}`,
-      to: '+201222598099',
-      from: '+17604254407' 
-    });
+// // Function to send OTP via SMS
+// exports.sendOTP = async (otp) => {
+//   // try {
+//     await client.messages.create({
+//       body: `Your OTP for signup: ${otp}`,
+//       to: '+201222598099',
+//       from: '+17604254407' 
+//     });
     
-    console.log('OTP sent successfully');
-  // } catch (error) {
-  //   console.error('Error sending OTP:', error);
-  //   // throw new Error('Failed to send OTP');
-  // }
-};
+//     console.log('OTP sent successfully');
+//   // } catch (error) {
+//   //   console.error('Error sending OTP:', error);
+//   //   // throw new Error('Failed to send OTP');
+//   // }
+// };
 
 
 
