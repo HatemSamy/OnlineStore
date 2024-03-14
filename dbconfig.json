@@ -1,0 +1,10 @@
+{
+  "user": "sa",
+  "password": "sql2001",
+  "server": "DESKTOP-NDRHRIF",
+  "database": "OnlineStore",
+  "options": {
+    "encrypt": true,
+    "trustServerCertificate": true
+  }
+}
