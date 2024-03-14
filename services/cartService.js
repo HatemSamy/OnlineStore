@@ -6,20 +6,15 @@ const Coupon = require("../models/couponModel");
 const Cart = require("../models/cartModel");
 const productModel = require("../models/productModel");
 
-// const calcTotalCartPrice = (cart, userType) => {
-//   let totalPrice = 0;
-//     cart.cartItems.forEach((item) => {
-//       totalPrice += item.quantity * item.price;
-//     });
-
-//   console.log("--------------------------------------------------------");
-//   console.log(totalPrice);
-//   console.log("--------------------------------------------------------");
-
-//   cart.totalCartPrice = totalPrice;
-//   cart.totalPriceAfterDiscount = undefined;
-//   return cart;
-// };
+const calcTotalCartPrice = (cart, userType) => {
+  let totalPrice = 0;
+    cart.cartItems.forEach((item) => {
+      totalPrice += item.quantity * item.price;
+    });
+  cart.totalCartPrice = totalPrice;
+  cart.totalPriceAfterDiscount = undefined;
+  return cart;
+};
 
 //___________________________________________________________________________________________________
 
