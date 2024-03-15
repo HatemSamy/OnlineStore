@@ -17,96 +17,102 @@ exports.uploadBannerImage = uploadMixOfImages([
   },
 ]);
 
-exports.createBanner= asyncHandler(async (req, res) => {
-    const products = await productModel.find().limit(7);
-   
-    const imageUrls = products.map(product => ({
-      productId: product._id,
-      url: product.image 
-    }));
+exports.createBanner = asyncHandler(async (req, res) => {
+  try {
+    const { productIds } = req.body;
+    if (!Array.isArray(productIds) || productIds.length === 0) {
+      return res.status(400).json({ message: "Invalid product IDs" });
+    }
+    const products = await productModel.find({ _id: { $in: productIds }});
 
-    const newBanner = new bannerModel({ images: imageUrls });
+    if (products.length === 0) {
+      return res.status(400).json({ message: "No valid products found for the user" });
+    }
 
-    await newBanner.save();
+    let banner = await bannerModel.findOne();
 
-    res.status(201).json({ message: "Banner created successfully", banner: newBanner });
- 
-});
+    if (!banner) {
+      const imageUrls = products.map(product => ({
+        productId: product._id,
+        url: product.image.url
+      }));
+      banner = new bannerModel({ images: imageUrls });
+    } else {
+      const existingProductIds = banner.images.map(image => image.productId.toString());
 
-exports.AddproductToBanner = asyncHandler(async (req, res) => {
-  const { bannerId, productId } = req.params;
-  const banner = await bannerModel.findById(bannerId);
-  if (!banner) {
-    return res.status(404).json({ message: "Banner not found" });
+      const newProducts = products.filter(product => !existingProductIds.includes(product._id.toString()));
+
+      if (newProducts.length === 0) {
+        return res.status(400).json({ message: "All selected products already exist in the banner" });
+      }
+
+      const newImageUrls = newProducts.map(product => ({
+        productId: product._id,
+        url: product.image.url
+      }));
+      banner.images = [...banner.images, ...newImageUrls];
+    }
+
+    await banner.save();
+
+    res.status(201).json({ message: "Banner created/updated successfully", banner });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
-  if (banner.images.length >= 7) {
-    return res.status(400).json({ message: "The banner already contains seven products" });
-  }
-  const product = await productModel.findById(productId);
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
-  }
-  banner.images.push({ productId: productId, url: product.image });
-  await banner.save();
-
-  res.status(200).json({ message: "Product added to the banner successfully", banner });
 });
 
 exports.getBannerProducts = asyncHandler(async (req, res) => {
   try {
-    const { bannerId } = req.params;
-    const banner = await bannerModel.findById(bannerId).populate('images.productId');
+    const banner = await bannerModel.findOne().populate('images.productId');
+    console.log(banner); 
     if (!banner) {
       return res.status(404).json({ message: "Banner not found" });
     }
 
-    const products = banner.images.map(image => ({
-      productId: image.productId._id,
-      name: image.productId.name,
-      imageUrl: image.url
-    }));
+    const products = banner.images.map(image => image.productId);
 
-    res.status(200).json({ products });
+    res.status(200).json({ message:"all banner products  data",data:products });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
+
 
 exports.deleteProductFromBanner = asyncHandler(async (req, res) => {
   try {
-    const { bannerId, productId } = req.params;
-    const banner = await bannerModel.findById(bannerId);
+    const { productId } = req.params;
+    let banner = await bannerModel.findOne();
+
     if (!banner) {
       return res.status(404).json({ message: "Banner not found" });
     }
+    const index = banner.images.findIndex(image => image.productId.toString() === productId);
 
-    // Find the index of the product in the banner's images array
-    const productIndex = banner.images.findIndex(image => image.productId.toString() === productId);
-    if (productIndex === -1) {
-      return res.status(404).json({ message: "Product not found in banner" });
+    if (index === -1) {
+      return res.status(404).json({ message: "Product not found in the banner" });
     }
-
-    // Remove the product from the banner's images array
-    banner.images.splice(productIndex, 1);
-
-    // Save the updated banner
+    banner.images.splice(index, 1);
     await banner.save();
 
-    res.status(200).json({ message: "Product removed from banner successfully", banner });
+    res.status(200).json({ message: "Product deleted from the banner successfully", banner });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 });
 
+
 exports.deleteBanner = asyncHandler(async (req, res) => {
-  
-    const { bannerId} = req.params;
-    const banner = await bannerModel.findByIdAndDelete(bannerId);
-    if (!banner) {
+  try {
+    const deletedBanner = await bannerModel.findOneAndDelete();
+
+    if (!deletedBanner) {
       return res.status(404).json({ message: "Banner not found" });
     }
-    res.status(200).json({ message: "Banner deleted successfly", banner });
-  
+
+    res.status(200).json({ message: "Banner deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
 });
 
 
