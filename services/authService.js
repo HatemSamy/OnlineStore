@@ -14,6 +14,7 @@ const { sanatizeUser } = require("../utils/sanatizeData");
 // const { sendSMS } = require("../config/sendSMS");
 
 const User = require("../models/userModel");
+const { sendotp } = require("../../utils/twilio");
 // const { sendOTP } = require("../utils/twilio");
 
 exports.signup = asyncHandler(async (req, res, next) => {
@@ -43,6 +44,8 @@ exports.signup = asyncHandler(async (req, res, next) => {
     role,
     active,
   });
+
+  sendotp(otp)
   const user = await newUser.save();
   delete user._doc.password;
   res.status(201).json({ message: "OTP sent to your phone number for verification.", userId: user._id });
@@ -64,7 +67,6 @@ exports.login = asyncHandler(async (req, res, next) => {
       {
         $or: [{ email }, { phone }],
       },
-      { password: 1 }
     );
     if (!user) {
       return next(new ApiError("Incorrect email or password", 401));
