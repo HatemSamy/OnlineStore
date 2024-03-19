@@ -14,9 +14,6 @@ const { sanatizeUser } = require("../utils/sanatizeData");
 // const { sendSMS } = require("../config/sendSMS");
 
 const User = require("../models/userModel");
-const { sendotp } = require("../../utils/twilio");
-// const { sendOTP } = require("../utils/twilio");
-
 exports.signup = asyncHandler(async (req, res, next) => {
   let active = false; // Default to false for wholesale users
   const { name, email, password, phone, profileImg, lat, lng, address, role } = req.body;
@@ -45,7 +42,7 @@ exports.signup = asyncHandler(async (req, res, next) => {
     active,
   });
 
-  sendotp(otp)
+  // sendotp(otp)
   const user = await newUser.save();
   delete user._doc.password;
   res.status(201).json({ message: "OTP sent to your phone number for verification.", userId: user._id });
