@@ -14,6 +14,8 @@ const { sanatizeUser } = require("../utils/sanatizeData");
 // const { sendSMS } = require("../config/sendSMS");
 
 const User = require("../models/userModel");
+const sendOTP = require("../utils/twilio");
+
 exports.signup = asyncHandler(async (req, res, next) => {
   let active = false; // Default to false for wholesale users
   const { name, email, password, phone, profileImg, lat, lng, address, role } = req.body;
@@ -40,13 +42,50 @@ exports.signup = asyncHandler(async (req, res, next) => {
     address,
     role,
     active,
+    OTP:otp
   });
 
-  // sendotp(otp)
+  
+  await sendOTP(phone, otp)
+  .then(message => console.log(`OTP sent: ${message.sid}`))
+  .catch(error => console.error(error));
+
+
   const user = await newUser.save();
   delete user._doc.password;
   res.status(201).json({ message: "OTP sent to your phone number for verification.", userId: user._id });
 });
+
+
+// verify account
+// verify account
+exports.verifyAccount = asyncHandler(async (req, res, next) => {
+  const { email, otp } = req.body;
+
+  const user = await User.findOne({ email, OTP: otp });
+  if (!user) {
+    return next(new ApiError("User account does not exist", 404));
+  }
+     console.log();
+  if (otp !== user.OTP) {
+    return next(new ApiError("Incorrect OTP", 404));
+  }
+
+  const verifiedUser = await User.findOneAndUpdate(
+    { email, OTP: otp },
+    { Verified: true },
+    { new: true }
+  );
+
+  res.status(201).json({
+    message: "Your account has been verified successfully. Please login now.",
+    userId: user._id
+  });
+});
+
+
+
+
 
 // @desc    Login
 // @route   POST /api/v1/auth/login
@@ -68,11 +107,16 @@ exports.login = asyncHandler(async (req, res, next) => {
     if (!user) {
       return next(new ApiError("Incorrect email or password", 401));
     }
+
+    if (!user.Verified) {
+      return next(new ApiError("your account not verifyed , verify your account frist", 401));
+    }
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
       return next(new ApiError("Incorrect email or password", 401));
     }
+
 
     const payLoad = {
       userId: user._id,
