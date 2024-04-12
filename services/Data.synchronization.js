@@ -207,7 +207,6 @@ exports.syncProductData = async (req, res, next) => {
     // res.json({ message: 'Data synchronization completed successfully.' });
   } catch (error) {
     console.log('Error during synchronization:', error);
-    next(new Error('Error during synchronization', { cause: 500 }));
   }
 };
 
