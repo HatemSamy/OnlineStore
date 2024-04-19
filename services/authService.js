@@ -16,43 +16,92 @@ const { sanatizeUser } = require("../utils/sanatizeData");
 const User = require("../models/userModel");
 const sendOTP = require("../utils/twilio");
 
+// exports.signup = asyncHandler(async (req, res, next) => {
+//   let active = false; 
+//   const { name, email, password, phone, profileImg, lat, lng, address, role } = req.body;
+//   if (role === "manager" || role === "admin") {
+//     return next(new ApiError("You must be a manager or an admin.", 400));
+//   }
+
+//   if (role !== "user-wholesale") {
+//     active = true;
+//   }
+
+//   const otp = Math.floor(1000 + Math.random() * 9000);
+//   console.log(otp);
+//   const newUser = new User({
+//     name,
+//     email,
+//     password,
+//     phone,
+//     profileImg,
+//     lat,
+//     lng,
+//     address,
+//     role,
+//     active,
+//     OTP:otp
+//   });
+
+  
+//   await sendOTP(phone, otp)
+//   .then(message => console.log(`OTP sent: ${message.sid}`))
+//   .catch(error => console.error(error));
+
+
+//   const user = await newUser.save();
+//   delete user._doc.password;
+//   res.status(201).json({ message: "OTP sent to your phone number for verification.", userId: user._id });
+// });
+
 exports.signup = asyncHandler(async (req, res, next) => {
-  let active = false; 
+  let active = false;
   const { name, email, password, phone, profileImg, lat, lng, address, role } = req.body;
+  
   if (role === "manager" || role === "admin") {
-    return next(new ApiError("You must be a manager or an admin.", 400));
+      return next(new ApiError("You must be a manager or an admin.", 400));
   }
 
   if (role !== "user-wholesale") {
-    active = true;
+      active = true;
   }
 
   const otp = Math.floor(1000 + Math.random() * 9000);
   console.log(otp);
+
   const newUser = new User({
-    name,
-    email,
-    password,
-    phone,
-    profileImg,
-    lat,
-    lng,
-    address,
-    role,
-    active,
-    OTP:otp
+      name,
+      email,
+      password,
+      phone,
+      profileImg,
+      lat,
+      lng,
+      address,
+      role,
+      active,
+      OTP: otp
   });
 
-  
-  await sendOTP(phone, otp)
-  .then(message => console.log(`OTP sent: ${message.sid}`))
-  .catch(error => console.error(error));
+  if (email) {
+      // Send OTP via email
+      await sendEmail(email, "OTP", otp)
+          .then(info => console.log(`Email sent: ${info.response}`))
+          .catch(error => console.error(error));
+  } else if (phone) {
+      // Send OTP via phone
+      await sendOTP(phone, otp)
+          .then(message => console.log(`OTP sent: ${message.sid}`))
+          .catch(error => console.error(error));
+  } else {
+      return next(new ApiError("You must provide either an email address or a phone number.", 400));
+  }
 
-
-  const user = await newUser.save();
-  delete user._doc.password;
-  res.status(201).json({ message: "OTP sent to your phone number for verification.", userId: user._id });
+  const savedUser = await newUser.save();
+  delete savedUser._doc.password;
+  res.status(201).json({ message: "OTP sent for verification.", user: savedUser});
 });
+
 
 // verify account
 exports.verifyAccount = asyncHandler(async (req, res, next) => {

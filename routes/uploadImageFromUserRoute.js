@@ -24,15 +24,7 @@ const router = express.Router();
 
 router
   .route("/:id")
-  .post(
-    authService.protect,
-    authService.allowedTo("user-wholesale", "user-normal"),
-    uploadProductImages,
-    // resizeProductImages,
-    updateProductValidator,
-    uploadImage("user-wholesale", "user-normal"),
-    uploadImageFromUser
-  )
+  
   .delete(
     authService.protect,
     authService.allowedTo("admin", "manager"),
@@ -48,5 +40,17 @@ router
     authService.allowedTo("admin", "manager"),
     getImagesFromUser
   );
+ router
+  .route("/UploadImage")
+  .post(
+    authService.protect,
+    authService.allowedTo("user-wholesale", "user-normal"),
+    uploadProductImages,
+    // resizeProductImages,
+    updateProductValidator,
+    uploadImage("user-wholesale", "user-normal"),
+    uploadImageFromUser
+  )
+
 
 module.exports = router;

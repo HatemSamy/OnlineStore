@@ -153,7 +153,7 @@ exports.getProductValidator = [
 ];
 
 exports.updateProductValidator = [
-  check("id").isMongoId().withMessage("Invalid ID formate"),
+  // check("id").isMongoId().withMessage("Invalid ID formate"),
   body("title")
     .optional()
     .custom((val, { req }) => {
