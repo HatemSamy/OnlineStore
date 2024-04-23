@@ -1,6 +1,6 @@
 var nodemailer = require('nodemailer');
 
-function sendEmail(dest, subject, otp, attachments) {
+function sendEmail(dest, subject, message) {
     var transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -14,8 +14,7 @@ function sendEmail(dest, subject, otp, attachments) {
             from: '"Mozart Application" <' + process.env.nodeMailerEmail + '>', 
             to: dest, 
             subject: subject, 
-            html: otp, 
-            attachments: attachments
+            html: message, 
         }, function(err, info) {
             if (err) {
                 reject(err);
