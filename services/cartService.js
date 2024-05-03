@@ -33,7 +33,7 @@ exports.addProductToCart = async (req, res) => {
       }
       
       if (req.user.role === "user-normal") {
-        productPrice = productModel.priceNormal;
+        productPrice = product.priceNormal;
       } else if (req.user.role === "user-wholesale") {
         productPrice = product.priceWholesale;
       }
